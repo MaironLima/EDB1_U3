@@ -10,7 +10,7 @@ LocallyLinearHashTable::LocallyLinearHashTable(int n, int beta) {
     elementCount = 0; // iniciamente a tabela tem 0 elementos
 }
 
-InsertResult LocallyLinearHashTable::insert(int key) {
+InsertResult LocallyLinearHashTable::insert(uint64_t key) {
     int probes_count = 0;
     uint64_t h1 = hash1(key) % size;
     uint64_t h2 = hash2(key) % size;
@@ -60,7 +60,7 @@ InsertResult LocallyLinearHashTable::insert(int key) {
     return {false, probes_count};
 }
 
-SearchResult LocallyLinearHashTable::search(int key) {
+SearchResult LocallyLinearHashTable::search(uint64_t key) {
     int probes_count = 0;
     uint64_t h1 = hash1(key) % size;
     uint64_t h2 = hash2(key) % size;

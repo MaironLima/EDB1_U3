@@ -21,7 +21,7 @@ private:
     int blockSize;
     int numBlocks;
 
-    std::vector<int> table;
+    std::vector<uint64_t> table;
     std::vector<int> blockLoads;
 
     int elementCount; // número de elementos na tabela
@@ -49,8 +49,8 @@ private:
 
 public:
     LocallyLinearHashTable(int n, int beta);
-    InsertResult insert(int key);
-    SearchResult search(int key);
+    InsertResult insert(uint64_t key);
+    SearchResult search(uint64_t key);
     double loadFactor() const;          // Função para retornar o alfa
 };
 
