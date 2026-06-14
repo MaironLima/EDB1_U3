@@ -4,5 +4,5 @@
 
 ```bash
 cd .\locallyLinearTestes\
-g++ -O3 main.cpp locallyLinear.cpp -o simulacao
+g++ -O3 main.cpp locallyLinear.cpp simulacaoNumerosSequenciais.cpp simulacaoNumerosAleatorios.cpp simulacaoNumerosCPF.cpp simulacaoNumerosPadronizados.cpp -o simulacao
 .\simulacao.exe
