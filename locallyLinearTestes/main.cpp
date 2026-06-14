@@ -37,26 +37,26 @@ void executarSimulacaoCompleta()
             // Acumuladores de Tempo e Probes
             // ==========================================
             // Bloco 1: Inserção até M
-            double tempoInsercaoAteM_Total = 0;          
+            double tempoInsercaoAteM_Total = 0;
             long long probesInsercaoAteM_Total = 0;
             int maxProbesInsercaoAteM = 0;
 
             // Bloco 2: Inserção + Unitária
-            double tempoInsercaoPosPreenchimento_Total = 0; 
-            double tempoInsercaoUnitario_Max = 0;   
+            double tempoInsercaoPosPreenchimento_Total = 0;
+            double tempoInsercaoUnitario_Max = 0;
             long long probesInsercaoPos_Total = 0;
             int maxProbesInsercaoPos = 0;
-            
+
             // Bloco 3: Busca Total + Unitária
-            double tempoBuscaTotal_Acumulado = 0;        
-            double tempoBuscaUnitario_Max = 0;     
+            double tempoBuscaTotal_Acumulado = 0;
+            double tempoBuscaUnitario_Max = 0;
             long long probesBuscaTotal = 0;
             int maxProbesBusca = 0;
 
             for (int sim = 0; sim < numeroSimulacoes; sim++)
             {
-                LocallyLinearHashTable ht(n, beta);
                 vector<int> chaves(m);
+                LocallyLinearHashTable ht(n, beta);
 
                 for (int i = 0; i < m; i++)
                     chaves[i] = (int)(rng() % 2147483646ULL) + 1;
@@ -72,14 +72,13 @@ void executarSimulacaoCompleta()
                     probesInsercaoAteM_Total += r.probes;
                     maxProbesInsercaoAteM = max(maxProbesInsercaoAteM, r.probes);
                 }
-
                 auto fimInsertM = chrono::high_resolution_clock::now();
                 tempoInsercaoAteM_Total += chrono::duration<double, milli>(fimInsertM - inicioInsertM).count();
 
                 // ==========================================
                 // 2. INSERÇÃO PÓS-PREENCHIMENTO + UNITÁRIA
                 // ==========================================
-                LocallyLinearHashTable htTemp = ht; 
+                LocallyLinearHashTable htTemp = ht;
 
                 auto inicioPosPreenchimento = chrono::high_resolution_clock::now();
 
@@ -97,7 +96,6 @@ void executarSimulacaoCompleta()
 
                 double tempoOp_inserir = chrono::duration<double, micro>(t2_inserir - t1_inserir).count();
                 tempoInsercaoUnitario_Max = max(tempoInsercaoUnitario_Max, tempoOp_inserir);
-                
 
                 auto fimPosPreenchimento = chrono::high_resolution_clock::now();
                 tempoInsercaoPosPreenchimento_Total += chrono::duration<double, milli>(fimPosPreenchimento - inicioPosPreenchimento).count();
@@ -107,13 +105,13 @@ void executarSimulacaoCompleta()
                 // ==========================================
                 auto inicioTodasBuscas = chrono::high_resolution_clock::now();
 
-
                 // mesma coisa aqui, tirei o "for" pois estava buscando por todas as chaves da tabela.
                 // ao inves de buscar por todas as chaves, aconselho buscar por uma aleatória, o programa fará isso 100 vezes
 
-                std::random_device indiceAleatorioChaves;
-                std::mt19937 gerador(indiceAleatorioChaves());
-                std::uniform_int_distribution<size_t> distribuicao(0, chaves.size() - 1);
+                // removi os "std::" que estavam antes das variaveis
+                random_device indiceAleatorioChaves;
+                mt19937 gerador(indiceAleatorioChaves());
+                uniform_int_distribution<size_t> distribuicao(0, chaves.size() - 1);
                 size_t indiceAleatorio = distribuicao(gerador);
 
                 auto t1_busca = chrono::high_resolution_clock::now();
@@ -133,53 +131,87 @@ void executarSimulacaoCompleta()
             // ==========================================
             // CÁLCULO DAS MÉDIAS
             // ==========================================
+            // concertei o valor de tempo medio total dos conjuntos, antes não estavam sendo divididos pelas quantidades corretas
+            // tambem alterei o nome nas saidas tempo medio do conjuto total rodado por tempo total 
+            
             double totalOperacoes = numeroSimulacoes * m;
 
-            // Bloco 1
-            double mediaInsercaoAteM = tempoInsercaoAteM_Total / numeroSimulacoes;
-            double mediaInsercaoAteMOp = tempoInsercaoAteM_Total / totalOperacoes;
-            double mediaProbesInsercaoAteM = (double)probesInsercaoAteM_Total / totalOperacoes;
-            
-            // Bloco 2
-            double mediaInsercaoPosPreenchimento = tempoInsercaoPosPreenchimento_Total / numeroSimulacoes;
-            double mediaInsercaoPosOp = tempoInsercaoPosPreenchimento_Total / totalOperacoes;
-            double mediaProbesInsercaoPos = (double)probesInsercaoPos_Total / totalOperacoes;
-            
-            // Bloco 3
-            double mediaBuscaTotal = tempoBuscaTotal_Acumulado / numeroSimulacoes;
-            double mediaBuscaTotalOp = tempoBuscaTotal_Acumulado / totalOperacoes;
-            double mediaProbesBusca = (double)probesBuscaTotal / totalOperacoes;
+            // Quantidade real de operações em cada bloco
+            double totalOperacoesInsercaoAteM = numeroSimulacoes * m;
+            double totalOperacoesInsercaoPos = numeroSimulacoes;
+            double totalOperacoesBusca = numeroSimulacoes;
+
+            // Bloco 1 - Inserção até α
+            double mediaInsercaoAteM = tempoInsercaoAteM_Total / totalOperacoesInsercaoAteM;
+            double mediaInsercaoAteMOp = tempoInsercaoAteM_Total / totalOperacoesInsercaoAteM;
+            double mediaProbesInsercaoAteM =
+                (double)probesInsercaoAteM_Total / totalOperacoesInsercaoAteM;
+
+            // Bloco 2 - Inserção unitária após preenchimento
+            double mediaInsercaoPosPreenchimento =
+                tempoInsercaoPosPreenchimento_Total / numeroSimulacoes;
+
+            double mediaInsercaoPosOp =
+                tempoInsercaoPosPreenchimento_Total / totalOperacoesInsercaoPos;
+
+            double mediaProbesInsercaoPos =
+                (double)probesInsercaoPos_Total / totalOperacoesInsercaoPos;
+
+            // Bloco 3 - Busca unitária
+            double mediaBuscaTotal =
+                tempoBuscaTotal_Acumulado / numeroSimulacoes;
+
+            double mediaBuscaTotalOp =
+                tempoBuscaTotal_Acumulado / totalOperacoesBusca;
+
+            double mediaProbesBusca =
+                (double)probesBuscaTotal / totalOperacoesBusca;
 
             // ==========================================
             // OUTPUT REESTRUTURADO E FORMATAÇÃO DE TEXTO
             // ==========================================
             cout << "\n==================================================\n";
-            cout << " CONFIGURACAO: n = " << n << " | alpha = " << alpha << " | beta = " << beta << "\n\n";
+            cout << " CONFIGURACAO: n = " << n
+                 << " | alpha = " << alpha
+                 << " | beta = " << beta << "\n\n";
 
-            // Evita notação científica (e-05) nos decimais pequenos
-            cout << fixed << setprecision(7); 
+            cout << fixed << setprecision(7);
 
             cout << "1. INSERCAO ATE FATOR DE CARGA (alpha)\n";
-            cout << "   - Tempo medio do conjunto (total ate alpha) : " << mediaInsercaoAteM << " ms\n";
-            cout << "   - Tempo medio por operacao                  : " << mediaInsercaoAteMOp * (1000) << " us/op\n"; // transformei em de mili para micro pois estava dando zero no retorno em alguns casos
-            cout << "   - Probes medio                              : " << mediaProbesInsercaoAteM << "\n";
-            cout << "   - Probes maximo                             : " << maxProbesInsercaoAteM << "\n\n";
+            cout << "   - Tempo do conjunto (total ate alpha)       : "
+                 << tempoInsercaoAteM_Total << " ms\n";
+            cout << "   - Tempo medio por operacao                  : "
+                 << mediaInsercaoAteMOp * 1000 << " us/op\n";
+            cout << "   - Probes medio                              : "
+                 << mediaProbesInsercaoAteM << "\n";
+            cout << "   - Probes maximo                             : "
+                 << maxProbesInsercaoAteM << "\n\n";
 
             cout << "2. INSERCAO\n";
-            cout << "   - Tempo medio do conjunto total rodado      : " << mediaInsercaoPosPreenchimento << " ms\n";
-            cout << "   - Tempo medio por operacao                  : " << mediaInsercaoPosOp * (1000) << " us/op\n"; // transformei em de mili para micro pois estava dando zero no retorno em alguns casos
-            cout << "   - Tempo maximo registrado em 1 op (Unit)    : " << (tempoInsercaoUnitario_Max / 1000.0) << " ms\n";
-            cout << "   - Probes medio                              : " << mediaProbesInsercaoPos << "\n";
-            cout << "   - Probes maximo                             : " << maxProbesInsercaoPos << "\n\n";
+            cout << "   - Tempo do conjunto                         : "
+                 << tempoInsercaoPosPreenchimento_Total << " ms\n";
+            cout << "   - Tempo medio por operacao                  : "
+                 << mediaInsercaoPosOp * 1000 << " us/op\n";
+            cout << "   - Tempo maximo registrado em 1 op (Unit)    : "
+                 << (tempoInsercaoUnitario_Max / 1000.0) << " ms\n";
+            cout << "   - Probes medio                              : "
+                 << mediaProbesInsercaoPos << "\n";
+            cout << "   - Probes maximo                             : "
+                 << maxProbesInsercaoPos << "\n\n";
 
             cout << "3. BUSCA\n";
-            cout << "   - Tempo medio do conjunto total rodado      : " << mediaBuscaTotal << " ms\n";
-            cout << "   - Tempo medio por operacao                  : " << mediaBuscaTotalOp * (1000) << " us/op\n"; // transformei em de mili para micro pois estava dando zero no retorno em alguns casos
-            cout << "   - Tempo maximo registrado em 1 op (Unit)    : " << (tempoBuscaUnitario_Max / 1000.0) << " ms\n";
-            cout << "   - Probes medio                              : " << mediaProbesBusca << "\n";
-            cout << "   - Probes maximo                             : " << maxProbesBusca << "\n";
-            
-            cout << defaultfloat; 
+            cout << "   - Tempo do conjunto                         : "
+                 << tempoBuscaTotal_Acumulado << " ms\n";
+            cout << "   - Tempo medio por operacao                  : "
+                 << mediaBuscaTotalOp * 1000 << " us/op\n";
+            cout << "   - Tempo maximo registrado em 1 op (Unit)    : "
+                 << (tempoBuscaUnitario_Max / 1000.0) << " ms\n";
+            cout << "   - Probes medio                              : "
+                 << mediaProbesBusca << "\n";
+            cout << "   - Probes maximo                             : "
+                 << maxProbesBusca << "\n";
+
+            cout << defaultfloat;
         }
     }
 }
