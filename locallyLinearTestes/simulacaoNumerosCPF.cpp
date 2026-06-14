@@ -5,19 +5,58 @@
 #include <random>
 #include <algorithm>
 #include <iomanip>
+#include <array>
+#include <string>
 #include "locallyLinear.h"
-#include "simulacaoNumerosSequenciais.h"
+#include "simulacaoNumerosCPF.h"
 
 using namespace std;
 
-void simulacaoNumerosSequenciais()
+class CPFGenerator {
+private:
+    mt19937_64 rng;
+    uniform_int_distribution<int> firstDigitDist;
+    uniform_int_distribution<int> digitDist;
+
+public:
+    CPFGenerator() : rng(random_device{}()), firstDigitDist(1, 9), digitDist(0, 9) {}
+
+    uint64_t gerarCPF() {
+        array<int, 11> cpf;
+
+        cpf[0] = firstDigitDist(rng);
+        for (int i = 1; i < 9; i++)
+            cpf[i] = digitDist(rng);
+
+        int soma = 0;
+        for (int i = 0; i < 9; i++)
+            soma += cpf[i] * (10 - i);
+
+        int resto = soma % 11;
+        cpf[9] = (resto < 2) ? 0 : 11 - resto;
+
+        soma = 0;
+        for (int i = 0; i < 10; i++)
+            soma += cpf[i] * (11 - i);
+
+        resto = soma % 11;
+        cpf[10] = (resto < 2) ? 0 : 11 - resto;
+
+        uint64_t numero = 0;
+        for (int i = 0; i < 11; i++)
+            numero = numero * 10 + cpf[i];
+
+        return numero;
+    }
+};
+
+void simulacaoNumerosCPF()
 {
-    cout << "\033[32m=====================Simulação com Números Sequenciais=====================\033[0m" << std::endl;
+    cout << "\033[32m=====================Simulação com Números CPF=====================\033[0m" << std::endl;
     vector<int> tamanhos = {256, 4096, 65536, 1048576, 4194304};
     vector<double> alfas = {0.4, 0.9};
 
     const int numeroSimulacoes = 100;
-    mt19937_64 rng(42);
 
     for (int n : tamanhos)
     {
@@ -51,18 +90,20 @@ void simulacaoNumerosSequenciais()
 
             for (int sim = 0; sim < numeroSimulacoes; sim++)
             {
-                vector<int> chaves(m);
+                vector<uint64_t> chaves(m);
                 LocallyLinearHashTable ht(n, beta);
 
-                for (int i = 1; i < m; i++)
-                    chaves[i] = i;
+                CPFGenerator gerador;
+
+                for (int i = 0; i < m; i++)
+                    chaves[i] = gerador.gerarCPF();
 
                 // ==========================================
                 // 1. INSERÇÃO ATÉ M (Preenchimento Inicial)
                 // ==========================================
                 auto inicioInsertM = chrono::high_resolution_clock::now();
 
-                for (int k : chaves)
+                for (uint64_t k : chaves)
                 {
                     auto r = ht.insert(k);
                     probesInsercaoAteM_Total += r.probes;
@@ -78,10 +119,7 @@ void simulacaoNumerosSequenciais()
 
                 auto inicioPosPreenchimento = chrono::high_resolution_clock::now();
 
-                // tirei o "for" pois estava servindo como contador para adicionar novas chaves. A cada chave de chaves, estava adicionando uma nova chave na tabela
-                // tanto que o probes máximo baixou drasticamente, estava dando o tamanho da tabela
-
-                int novaChave = m + 1;
+                uint64_t novaChave = gerador.gerarCPF();
 
                 auto t1_inserir = chrono::high_resolution_clock::now();
                 auto r_inserir = htTemp.insert(novaChave);
@@ -102,9 +140,9 @@ void simulacaoNumerosSequenciais()
                 auto inicioTodasBuscas = chrono::high_resolution_clock::now();
 
                 random_device indiceAleatorioChaves;
-                mt19937 gerador(indiceAleatorioChaves());
+                mt19937 geradorIndice(indiceAleatorioChaves());
                 uniform_int_distribution<size_t> distribuicao(0, chaves.size() - 1);
-                size_t indiceAleatorio = distribuicao(gerador);
+                size_t indiceAleatorio = distribuicao(geradorIndice);
 
                 auto t1_busca = chrono::high_resolution_clock::now();
                 auto r_busca = ht.search(chaves[indiceAleatorio]);
