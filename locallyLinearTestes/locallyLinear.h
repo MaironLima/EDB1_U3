@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstdint>
 #include <algorithm>
+#include <iostream>
+using namespace std;
 
 struct InsertResult {
     bool success;

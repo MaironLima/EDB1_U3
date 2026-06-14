@@ -11,9 +11,12 @@ LocallyLinearHashTable::LocallyLinearHashTable(int n, int beta) {
 }
 
 InsertResult LocallyLinearHashTable::insert(uint64_t key) {
+    //cout << key << endl;
     int probes_count = 0;
     uint64_t h1 = hash1(key) % size;
     uint64_t h2 = hash2(key) % size;
+    //cout << h1 << endl;
+    //cout << h2 << endl;
 
     int block1 = h1 / blockSize;
     int block2 = h2 / blockSize;

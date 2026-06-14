@@ -6,11 +6,11 @@
 #include <algorithm>
 #include <iomanip>
 #include "locallyLinear.h"
-#include "simulacaoNumerosSequenciais.h"
+#include "simulacaoNumerosPadronizados.h"
 
 using namespace std;
 
-void simulacaoNumerosSequenciais()
+void simulacaoNumerosPadronizados()
 {
     cout << "\033[32m=====================Simulação com Números Sequenciais=====================\033[0m" << std::endl;
     vector<int> tamanhos = {256, 4096, 65536, 1048576, 4194304};
@@ -54,8 +54,12 @@ void simulacaoNumerosSequenciais()
                 vector<uint64_t> chaves(m);
                 LocallyLinearHashTable ht(n, beta);
 
-                for (uint64_t i = 1; i < m; i++)
-                    chaves[i] = i;
+                // Padrão de 5 em 5
+                uint64_t chaveInicial = 1000000000;
+                for (int i = 0; i < m; i++){
+                    chaves[i] = chaveInicial;
+                    chaveInicial += 5;
+                }
 
                 // ==========================================
                 // 1. INSERÇÃO ATÉ M (Preenchimento Inicial)
@@ -81,7 +85,7 @@ void simulacaoNumerosSequenciais()
                 // tirei o "for" pois estava servindo como contador para adicionar novas chaves. A cada chave de chaves, estava adicionando uma nova chave na tabela
                 // tanto que o probes máximo baixou drasticamente, estava dando o tamanho da tabela
 
-                uint64_t novaChave = m + 1;
+                uint64_t novaChave = chaveInicial; // já está com 5 a mais;
 
                 auto t1_inserir = chrono::high_resolution_clock::now();
                 auto r_inserir = htTemp.insert(novaChave);
