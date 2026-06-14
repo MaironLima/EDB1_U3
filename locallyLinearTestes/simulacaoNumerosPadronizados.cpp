@@ -12,7 +12,7 @@ using namespace std;
 
 void simulacaoNumerosPadronizados()
 {
-    cout << "\033[32m=====================Simulação com Números Sequenciais=====================\033[0m" << std::endl;
+    cout << "\033[32m=====================Simulação com Números Padronizados=====================\033[0m" << std::endl;
     vector<int> tamanhos = {256, 4096, 65536, 1048576, 4194304};
     vector<double> alfas = {0.4, 0.9};
 

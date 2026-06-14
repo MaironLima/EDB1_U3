@@ -5,9 +5,9 @@
 
 
 int main() {
-    //simulacaoNumerosAleatorios();
-    //simulacaoNumerosSequenciais();
-    //simulacaoNumerosCPF();
+    simulacaoNumerosAleatorios();
+    simulacaoNumerosSequenciais();
+    simulacaoNumerosCPF();
     simulacaoNumerosPadronizados();
     
     return 0;
