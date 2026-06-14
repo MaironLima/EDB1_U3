@@ -24,6 +24,7 @@ private:
     std::vector<int> table;
     std::vector<int> blockLoads;
 
+    int elementCount; // número de elementos na tabela
 
     //SplitMix64
     static uint64_t hash1(uint64_t x) {
@@ -50,6 +51,7 @@ public:
     LocallyLinearHashTable(int n, int beta);
     InsertResult insert(int key);
     SearchResult search(int key);
+    double loadFactor() const;          // Função para retornar o alfa
 };
 
 #endif // LOCALLY_LINEAR_H

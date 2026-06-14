@@ -9,6 +9,11 @@
 
 using namespace std;
 
+// com as mudaças que eu fiz, eu finalmente tinha conseguido rodar o código por completo.
+// infelizmente, quando o tamanho da tabela está a partir de 1048576, o tempo de inserção/busca ainda começa a aumentar, dessa vez n sei o motivo
+// por mim a gente entrega assim como esta, ainda precisamos testar o objetivo do artigo
+// tbm adicionei um método que retorna o fator de carga da tabela, pelos testes q eu fiz, a tabela realmente é preenchida até o fator de carga
+
 void executarSimulacaoCompleta()
 {
     vector<int> tamanhos = {256, 4096, 65536, 1048576, 4194304};
@@ -22,11 +27,9 @@ void executarSimulacaoCompleta()
         for (double alpha : alfas)
         {
             double loglog_n = log2(log2((double)n));
-            if (loglog_n < 0)
-                loglog_n = 0;
 
-            int beta = floor(loglog_n / (1.0 - alpha) + 1.0);
-            beta = max(beta, 1);
+            int beta = floor(loglog_n / (1.0 - alpha)); // de acordo com o artigo, o tamanho dos blocos é dessa forma
+            // algumas linhas daqui q tirei eram casos imposíveis, então nem precisam na real
 
             int m = static_cast<int>(n * alpha);
 
@@ -80,20 +83,21 @@ void executarSimulacaoCompleta()
 
                 auto inicioPosPreenchimento = chrono::high_resolution_clock::now();
 
-                for (int k : chaves)
-                {
-                    int novaChave = (int)(rng() % 2147483646ULL) + 1;
+                // tirei o "for" pois estava servindo como contador para adicionar novas chaves. A cada chave de chaves, estava adicionando uma nova chave na tabela
+                // tanto que o probes máximo baixou drasticamente, estava dando o tamanho da tabela
 
-                    auto t1 = chrono::high_resolution_clock::now();
-                    auto r = htTemp.insert(novaChave);
-                    auto t2 = chrono::high_resolution_clock::now();
+                int novaChave = (int)(rng() % 2147483646ULL) + 1;
 
-                    probesInsercaoPos_Total += r.probes;
-                    maxProbesInsercaoPos = max(maxProbesInsercaoPos, r.probes);
+                auto t1_inserir = chrono::high_resolution_clock::now();
+                auto r_inserir = htTemp.insert(novaChave);
+                auto t2_inserir = chrono::high_resolution_clock::now();
 
-                    double tempoOp = chrono::duration<double, micro>(t2 - t1).count();
-                    tempoInsercaoUnitario_Max = max(tempoInsercaoUnitario_Max, tempoOp);
-                }
+                probesInsercaoPos_Total += r_inserir.probes;
+                maxProbesInsercaoPos = max(maxProbesInsercaoPos, r_inserir.probes);
+
+                double tempoOp_inserir = chrono::duration<double, micro>(t2_inserir - t1_inserir).count();
+                tempoInsercaoUnitario_Max = max(tempoInsercaoUnitario_Max, tempoOp_inserir);
+                
 
                 auto fimPosPreenchimento = chrono::high_resolution_clock::now();
                 tempoInsercaoPosPreenchimento_Total += chrono::duration<double, milli>(fimPosPreenchimento - inicioPosPreenchimento).count();
@@ -103,18 +107,24 @@ void executarSimulacaoCompleta()
                 // ==========================================
                 auto inicioTodasBuscas = chrono::high_resolution_clock::now();
 
-                for (int k : chaves)
-                {
-                    auto t1 = chrono::high_resolution_clock::now();
-                    auto r = ht.search(k);
-                    auto t2 = chrono::high_resolution_clock::now();
 
-                    probesBuscaTotal += r.probes;
-                    maxProbesBusca = max(maxProbesBusca, r.probes);
+                // mesma coisa aqui, tirei o "for" pois estava buscando por todas as chaves da tabela.
+                // ao inves de buscar por todas as chaves, aconselho buscar por uma aleatória, o programa fará isso 100 vezes
 
-                    double tempoOp = chrono::duration<double, micro>(t2 - t1).count();
-                    tempoBuscaUnitario_Max = max(tempoBuscaUnitario_Max, tempoOp);
-                }
+                std::random_device indiceAleatorioChaves;
+                std::mt19937 gerador(indiceAleatorioChaves());
+                std::uniform_int_distribution<size_t> distribuicao(0, chaves.size() - 1);
+                size_t indiceAleatorio = distribuicao(gerador);
+
+                auto t1_busca = chrono::high_resolution_clock::now();
+                auto r_busca = ht.search(chaves[indiceAleatorio]);
+                auto t2_busca = chrono::high_resolution_clock::now();
+
+                probesBuscaTotal += r_busca.probes;
+                maxProbesBusca = max(maxProbesBusca, r_busca.probes);
+
+                double tempoOp_busca = chrono::duration<double, micro>(t2_busca - t1_busca).count();
+                tempoBuscaUnitario_Max = max(tempoBuscaUnitario_Max, tempoOp_busca);
 
                 auto fimTodasBuscas = chrono::high_resolution_clock::now();
                 tempoBuscaTotal_Acumulado += chrono::duration<double, milli>(fimTodasBuscas - inicioTodasBuscas).count();
@@ -151,20 +161,20 @@ void executarSimulacaoCompleta()
 
             cout << "1. INSERCAO ATE FATOR DE CARGA (alpha)\n";
             cout << "   - Tempo medio do conjunto (total ate alpha) : " << mediaInsercaoAteM << " ms\n";
-            cout << "   - Tempo medio por operacao                  : " << mediaInsercaoAteMOp << " ms/op\n";
+            cout << "   - Tempo medio por operacao                  : " << mediaInsercaoAteMOp * (1000) << " us/op\n"; // transformei em de mili para micro pois estava dando zero no retorno em alguns casos
             cout << "   - Probes medio                              : " << mediaProbesInsercaoAteM << "\n";
             cout << "   - Probes maximo                             : " << maxProbesInsercaoAteM << "\n\n";
 
             cout << "2. INSERCAO\n";
             cout << "   - Tempo medio do conjunto total rodado      : " << mediaInsercaoPosPreenchimento << " ms\n";
-            cout << "   - Tempo medio por operacao                  : " << mediaInsercaoPosOp << " ms/op\n";
+            cout << "   - Tempo medio por operacao                  : " << mediaInsercaoPosOp * (1000) << " us/op\n"; // transformei em de mili para micro pois estava dando zero no retorno em alguns casos
             cout << "   - Tempo maximo registrado em 1 op (Unit)    : " << (tempoInsercaoUnitario_Max / 1000.0) << " ms\n";
             cout << "   - Probes medio                              : " << mediaProbesInsercaoPos << "\n";
             cout << "   - Probes maximo                             : " << maxProbesInsercaoPos << "\n\n";
 
             cout << "3. BUSCA\n";
             cout << "   - Tempo medio do conjunto total rodado      : " << mediaBuscaTotal << " ms\n";
-            cout << "   - Tempo medio por operacao                  : " << mediaBuscaTotalOp << " ms/op\n";
+            cout << "   - Tempo medio por operacao                  : " << mediaBuscaTotalOp * (1000) << " us/op\n"; // transformei em de mili para micro pois estava dando zero no retorno em alguns casos
             cout << "   - Tempo maximo registrado em 1 op (Unit)    : " << (tempoBuscaUnitario_Max / 1000.0) << " ms\n";
             cout << "   - Probes medio                              : " << mediaProbesBusca << "\n";
             cout << "   - Probes maximo                             : " << maxProbesBusca << "\n";

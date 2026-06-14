@@ -7,6 +7,7 @@ LocallyLinearHashTable::LocallyLinearHashTable(int n, int beta) {
     numBlocks = (size + blockSize - 1) / blockSize;
     table.assign(size, 0);
     blockLoads.assign(numBlocks, 0);
+    elementCount = 0; // iniciamente a tabela tem 0 elementos
 }
 
 InsertResult LocallyLinearHashTable::insert(int key) {
@@ -51,6 +52,7 @@ InsertResult LocallyLinearHashTable::insert(int key) {
             if (table[pos] == 0) {
                 table[pos] = key;
                 blockLoads[currentBlock]++;
+                elementCount++; // toda vez q insere numa entrada vazia, aumenta o numero de elementos da tabela
                 return {true, probes_count};
             }
         }
@@ -123,4 +125,9 @@ SearchResult LocallyLinearHashTable::search(int key) {
         }
     }
     return {false, probes_count};
+}
+
+// Função para  retornar fator de carga
+double LocallyLinearHashTable::loadFactor() const {
+    return static_cast<double>(elementCount) / size;
 }
