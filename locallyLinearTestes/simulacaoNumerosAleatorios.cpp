@@ -7,12 +7,13 @@
 #include <iomanip>
 #include "locallyLinear.h"
 #include "simulacaoNumerosAleatorios.h"
+#include "relatorio.h"
 
 using namespace std;
 
 void simulacaoNumerosAleatorios()
 {
-    cout << "\033[32m=====================Simulação com Números Aleatórios=====================\033[0m" << std::endl;
+    cout << "\033[32m=====================Simulacao com Numeros Aleatorios=====================\033[0m" << endl;
     vector<int> tamanhos = {256, 4096, 65536, 1048576, 4194304};
     vector<double> alfas = {0.4, 0.9};
 
@@ -117,88 +118,74 @@ void simulacaoNumerosAleatorios()
                 tempoBuscaTotal_Acumulado += chrono::duration<double, milli>(fimTodasBuscas - inicioTodasBuscas).count();
             }
 
-            // ==========================================
-            // CÁLCULO DAS MÉDIAS
-            // ==========================================
-            
-            double totalOperacoes = numeroSimulacoes * m;
+               // ==========================================
+               // CÁLCULO DAS MÉDIAS
+               // ==========================================
 
-            // Quantidade real de operações em cada bloco
-            double totalOperacoesInsercaoAteM = numeroSimulacoes * m;
-            double totalOperacoesInsercaoPos = numeroSimulacoes;
-            double totalOperacoesBusca = numeroSimulacoes;
+               double totalOperacoes = numeroSimulacoes * m;
+               
+               double totalOperacoesInsercaoAteM = numeroSimulacoes * m;
+               double totalOperacoesInsercaoPos = numeroSimulacoes;
+               double totalOperacoesBusca = numeroSimulacoes;
+               
+               double mediaInsercaoAteM = tempoInsercaoAteM_Total / totalOperacoesInsercaoAteM;
+               double mediaInsercaoAteMOp = tempoInsercaoAteM_Total / totalOperacoesInsercaoAteM;
+               double mediaProbesInsercaoAteM =
+               (double)probesInsercaoAteM_Total / totalOperacoesInsercaoAteM;
+               
+               double mediaInsercaoPosPreenchimento =
+               tempoInsercaoPosPreenchimento_Total / numeroSimulacoes;
+               
+               double mediaInsercaoPosOp =
+               tempoInsercaoPosPreenchimento_Total / totalOperacoesInsercaoPos;
+               
+               double mediaProbesInsercaoPos =
+               (double)probesInsercaoPos_Total / totalOperacoesInsercaoPos;
+               
+               double mediaBuscaTotal =
+               tempoBuscaTotal_Acumulado / numeroSimulacoes;
+               
+               double mediaBuscaTotalOp =
+               tempoBuscaTotal_Acumulado / totalOperacoesBusca;
+               
+               double mediaProbesBusca =
+               (double)probesBuscaTotal / totalOperacoesBusca;
+               
+               MetricasSimulacao dados;
+               dados.alpha = alpha;
+               dados.n = n;
+               dados.beta = beta;
 
-            // Bloco 1 - Inserção até α
-            double mediaInsercaoAteM = tempoInsercaoAteM_Total / totalOperacoesInsercaoAteM;
-            double mediaInsercaoAteMOp = tempoInsercaoAteM_Total / totalOperacoesInsercaoAteM;
-            double mediaProbesInsercaoAteM =
-                (double)probesInsercaoAteM_Total / totalOperacoesInsercaoAteM;
+               dados.totalOperacoes = totalOperacoes;
+               dados.totalOperacoesInsercaoAteM = totalOperacoesInsercaoAteM;
+               dados.totalOperacoesInsercaoPos = totalOperacoesInsercaoPos;
+               dados.totalOperacoesBusca = totalOperacoesBusca;
 
-            // Bloco 2 - Inserção unitária após preenchimento
-            double mediaInsercaoPosPreenchimento =
-                tempoInsercaoPosPreenchimento_Total / numeroSimulacoes;
+               dados.tempoInsercaoAteM_Total = tempoInsercaoAteM_Total;
+               dados.mediaInsercaoAteM = mediaInsercaoAteM;
+               dados.mediaInsercaoAteMOp = mediaInsercaoAteMOp;
+               dados.mediaProbesInsercaoAteM = mediaProbesInsercaoAteM;
+               dados.maxProbesInsercaoAteM = maxProbesInsercaoAteM;
 
-            double mediaInsercaoPosOp =
-                tempoInsercaoPosPreenchimento_Total / totalOperacoesInsercaoPos;
+               dados.tempoInsercaoPosPreenchimento_Total = tempoInsercaoPosPreenchimento_Total;
+               dados.mediaInsercaoPosPreenchimento = mediaInsercaoPosPreenchimento;
+               dados.mediaInsercaoPosOp = mediaInsercaoPosOp;
+               dados.mediaProbesInsercaoPos = mediaProbesInsercaoPos;
+               dados.tempoInsercaoUnitario_Max = tempoInsercaoUnitario_Max;
+               dados.maxProbesInsercaoPos = maxProbesInsercaoPos;
 
-            double mediaProbesInsercaoPos =
-                (double)probesInsercaoPos_Total / totalOperacoesInsercaoPos;
+               dados.tempoBuscaTotal_Acumulado = tempoBuscaTotal_Acumulado;
+               dados.mediaBuscaTotal = mediaBuscaTotal;
+               dados.mediaBuscaTotalOp = mediaBuscaTotalOp;
+               dados.mediaProbesBusca = mediaProbesBusca;
+               dados.tempoBuscaUnitario_Max = tempoBuscaUnitario_Max;
+               dados.maxProbesBusca = maxProbesBusca;
 
-            // Bloco 3 - Busca unitária
-            double mediaBuscaTotal =
-                tempoBuscaTotal_Acumulado / numeroSimulacoes;
+               // ==========================================
+               // OUTPUT REESTRUTURADO E FORMATAÇÃO DE TEXTO
+               // ==========================================
+               imprimirRelatorioMetricas(dados);
 
-            double mediaBuscaTotalOp =
-                tempoBuscaTotal_Acumulado / totalOperacoesBusca;
-
-            double mediaProbesBusca =
-                (double)probesBuscaTotal / totalOperacoesBusca;
-
-            // ==========================================
-            // OUTPUT REESTRUTURADO E FORMATAÇÃO DE TEXTO
-            // ==========================================
-            cout << "\n==================================================\n";
-            cout << " CONFIGURACAO: n = " << n
-                 << " | alpha = " << alpha
-                 << " | beta = " << beta << "\n\n";
-
-            cout << fixed << setprecision(7);
-
-            cout << "1. INSERCAO ATE FATOR DE CARGA (alpha)\n";
-            cout << "   - Tempo do conjunto (total ate alpha)       : "
-                 << tempoInsercaoAteM_Total << " ms\n";
-            cout << "   - Tempo medio por operacao                  : "
-                 << mediaInsercaoAteMOp * 1000 << " us/op\n";
-            cout << "   - Probes medio                              : "
-                 << mediaProbesInsercaoAteM << "\n";
-            cout << "   - Probes maximo                             : "
-                 << maxProbesInsercaoAteM << "\n\n";
-
-            cout << "2. INSERCAO\n";
-            cout << "   - Tempo do conjunto                         : "
-                 << tempoInsercaoPosPreenchimento_Total << " ms\n";
-            cout << "   - Tempo medio por operacao                  : "
-                 << mediaInsercaoPosOp * 1000 << " us/op\n";
-            cout << "   - Tempo maximo registrado em 1 op (Unit)    : "
-                 << (tempoInsercaoUnitario_Max / 1000.0) << " ms\n";
-            cout << "   - Probes medio                              : "
-                 << mediaProbesInsercaoPos << "\n";
-            cout << "   - Probes maximo                             : "
-                 << maxProbesInsercaoPos << "\n\n";
-
-            cout << "3. BUSCA\n";
-            cout << "   - Tempo do conjunto                         : "
-                 << tempoBuscaTotal_Acumulado << " ms\n";
-            cout << "   - Tempo medio por operacao                  : "
-                 << mediaBuscaTotalOp * 1000 << " us/op\n";
-            cout << "   - Tempo maximo registrado em 1 op (Unit)    : "
-                 << (tempoBuscaUnitario_Max / 1000.0) << " ms\n";
-            cout << "   - Probes medio                              : "
-                 << mediaProbesBusca << "\n";
-            cout << "   - Probes maximo                             : "
-                 << maxProbesBusca << "\n";
-
-            cout << defaultfloat;
         }
     }
 }

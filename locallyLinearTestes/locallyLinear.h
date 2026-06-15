@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <algorithm>
 //#include <iostream>
-//using namespace std;
+using namespace std;
 
 struct InsertResult {
     bool success;
@@ -23,8 +23,8 @@ private:
     int blockSize;
     int numBlocks;
 
-    std::vector<uint64_t> table;
-    std::vector<int> blockLoads;
+    vector<uint64_t> table;
+    vector<int> blockLoads;
 
     int elementCount; // número de elementos na tabela
 

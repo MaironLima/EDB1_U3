@@ -1,6 +1,8 @@
 #include "locallyLinear.h"
 #include <cstdlib>
 
+using namespace std;
+
 LocallyLinearHashTable::LocallyLinearHashTable(int n, int beta) {
     size = n;
     blockSize = beta;
@@ -39,7 +41,7 @@ InsertResult LocallyLinearHashTable::insert(uint64_t key) {
         if (blockBegin >= size)
             continue;
 
-        int currentBlockSize = std::min(blockSize, size - blockBegin);
+        int currentBlockSize = min(blockSize, size - blockBegin);
 
         if (blockLoads[currentBlock] >= currentBlockSize) {
             probes_count += currentBlockSize;
@@ -83,7 +85,7 @@ SearchResult LocallyLinearHashTable::search(uint64_t key) {
 
         int begin1 = current1 * blockSize;
         if (begin1 < size) {
-            int currentBlockSize1 = std::min(blockSize, size - begin1);
+            int currentBlockSize1 = min(blockSize, size - begin1);
             int start1 = (jump == 0) ? offset1 % currentBlockSize1 : 0;
 
             for (int i = 0; i < currentBlockSize1; i++) {
@@ -104,7 +106,7 @@ SearchResult LocallyLinearHashTable::search(uint64_t key) {
 
         int begin2 = current2 * blockSize;
         if (begin2 < size) {
-            int currentBlockSize2 = std::min(blockSize, size - begin2);
+            int currentBlockSize2 = min(blockSize, size - begin2);
             int start2 = (jump == 0) ? offset2 % currentBlockSize2 : 0;
 
             for (int i = 0; i < currentBlockSize2; i++) {
